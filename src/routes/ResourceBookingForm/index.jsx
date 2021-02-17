@@ -15,6 +15,8 @@ import {
   getReourceBookingById,
   updateReourceBooking,
 } from "services/resourceBookings";
+
+import {getJobById } from "services/jobs";
 import { getTeamById } from "services/teams";
 import LoadingIndicator from "../../components/LoadingIndicator";
 import withAuthentication from "../../hoc/withAuthentication";
@@ -26,7 +28,8 @@ const ResourceBookingDetails = ({ teamId, resourceBookingId }) => {
   const [submitting, setSubmitting] = useState(false);
   const [jobId, setJobId] = useState(null);
   const [formData, setFormData] = useState(null);
-  const [team, loadingTeamError] = useData(getTeamById, teamId);
+  // const [team, loadingTeamError] = useData(getTeamById, teamId);
+  const [job, loadingJobError] = useData(getJobById, resourceBookingId);
   const [rb, loadingError] = useData(getReourceBookingById, resourceBookingId);
 
   useEffect(() => {
@@ -35,28 +38,28 @@ const ResourceBookingDetails = ({ teamId, resourceBookingId }) => {
     }
   }, [rb]);
 
-  useEffect(() => {
-    if (team && rb) {
-      const resource = _.find(
-        team.resources,
-        (r) => r.id === resourceBookingId
-      );
+  // useEffect(() => {
+  //   if (team && rb) {
+  //     const resource = _.find(
+  //       team.resources,
+  //       (r) => r.id === resourceBookingId
+  //     );
 
-      let job;
-      if (resource.jobId) {
-        job = _.find(team.jobs, { id: resource.jobId });
-      }
+  //     let job;
+  //     if (resource.jobId) {
+  //       job = _.find(team.jobs, { id: resource.jobId });
+  //     }
 
-      const jobTitle = _.get(job, "title", "<Not Assigned>");
+  //     const jobTitle = _.get(job, "title", "<Not Assigned>");
 
-      const data = {
-        jobTitle,
-        ...resource,
-        ...rb,
-      };
-      setFormData(data);
-    }
-  }, [rb, team, resourceBookingId]);
+  //     const data = {
+  //       jobTitle,
+  //       ...resource,
+  //       ...rb,
+  //     };
+  //     setFormData(data);
+  //   }
+  // }, [rb, team, resourceBookingId]);
 
   const onSubmit = async (values) => {
     const data = getRequestData(values);

@@ -12,6 +12,8 @@ import PageHeader from "../../components/PageHeader";
 import { useData } from "hooks/useData";
 import { getReourceBookingById } from "services/resourceBookings";
 import { getTeamById } from "services/teams";
+import {getJobById } from "services/jobs";
+import {useAsync} from 'react-use';
 import LoadingIndicator from "../../components/LoadingIndicator";
 import withAuthentication from "../../hoc/withAuthentication";
 import Button from "../../components/Button";
@@ -20,8 +22,36 @@ import ResourceDetails from "./ResourceDetails";
 import "./styles.module.scss";
 
 const ResourceBookingDetails = ({ teamId, resourceBookingId }) => {
-  const [rb, loadingError] = useData(getReourceBookingById, resourceBookingId);
-  const [team, loadingTeamError] = useData(getTeamById, teamId);
+  // const [rb, loadingError] = useData(getReourceBookingById, resourceBookingId);
+  const [rb, setRb] = useState(null)
+  const [loadingError, setLoadingError] = useState(null)
+  const [jobTitle, setJobTitle] = useState('<Not Assigned>')
+  // const [team, loadingTeamError] = useData(getTeamById, teamId);
+  // const [team, setTeam] = useState(null)
+  // const rb = null
+  useAsync(async () => {
+    try {
+      const { data } = await getReourceBookingById(resourceBookingId)
+      debugger;
+      setRb(data)
+    } catch (e) {
+      setLoadingError(e.message)
+    }
+    }, [resourceBookingId]);
+
+  useAsync(async () => {
+      debugger; 
+    if (rb) {
+      if (rb.jobId) {
+      const {data} = await getJobById(rb.jobId)
+        setJobTitle(data.title)
+        return data.title
+      }else {
+        return '<Not Assigned>'
+      }
+      return data
+    }
+    }, [rb]);
 
   const member = useMemo(() => {
     if (team) {
@@ -40,7 +70,7 @@ const ResourceBookingDetails = ({ teamId, resourceBookingId }) => {
 
   return (
     <Page title="Member Details">
-      {!member ? (
+      {!rb ? (
         <LoadingIndicator error={loadingError} />
       ) : (
         <>
@@ -49,8 +79,8 @@ const ResourceBookingDetails = ({ teamId, resourceBookingId }) => {
             backTo={`/taas/myteams/${teamId}`}
           />
           <div styleName="content-wrapper">
-            <ResourceSummary candidate={member} />
-            <ResourceDetails resource={{ ...rb, title: member.jobTitle }} />
+            {/* <ResourceSummary candidate={member} /> */}
+            <ResourceDetails resource={{ ...rb, title: jobTitle }} />
             <div styleName="actions">
               <Button
                 size="medium"
